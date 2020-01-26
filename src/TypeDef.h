@@ -4,27 +4,54 @@
 #if ARDUINO >= 100
   #include "Arduino.h"
 #else
-  #include "WProgram.h"
+  #error "Unsupported Arduino version (< 1.0.0)"
 #endif
+
+/*
+ * Uncomment to enable debug output.
+ * Warning: Debug output will slow down the whole system significantly.
+ *          Also, it will result in larger compiled binary.
+ * Levels: debug - only main info
+ *         verbose - full transcript of all SPI/UART communication
+ */
 
 //#define RADIOLIB_DEBUG
+//#define RADIOLIB_VERBOSE
+
+// set which Serial port should be used for debug output
+#define RADIOLIB_DEBUG_PORT   Serial
 
 #ifdef RADIOLIB_DEBUG
-  #define DEBUG_PRINT(...) { Serial.print(__VA_ARGS__); }
-  #define DEBUG_PRINTLN(...) { Serial.println(__VA_ARGS__); }
+  #define RADIOLIB_DEBUG_PRINT(...) { RADIOLIB_DEBUG_PORT.print(__VA_ARGS__); }
+  #define RADIOLIB_DEBUG_PRINTLN(...) { RADIOLIB_DEBUG_PORT.println(__VA_ARGS__); }
 #else
-  #define DEBUG_PRINT(...) {}
-  #define DEBUG_PRINTLN(...) {}
+  #define RADIOLIB_DEBUG_PRINT(...) {}
+  #define RADIOLIB_DEBUG_PRINTLN(...) {}
 #endif
 
+#ifdef RADIOLIB_VERBOSE
+  #define RADIOLIB_VERBOSE_PRINT(...) { RADIOLIB_DEBUG_PORT.print(__VA_ARGS__); }
+  #define RADIOLIB_VERBOSE_PRINTLN(...) { RADIOLIB_DEBUG_PORT.println(__VA_ARGS__); }
+#else
+  #define RADIOLIB_VERBOSE_PRINT(...) {}
+  #define RADIOLIB_VERBOSE_PRINTLN(...) {}
+#endif
+
+/*
+ * Uncomment to enable god mode - all methods and member variables in all classes will be made public, thus making them accessible from Arduino code.
+ * Warning: Come on, it's called GOD mode - obviously only use this if you know what you're doing.
+ *          Failure to heed the above warning may result in bricked module.
+ */
+//#define RADIOLIB_GODMODE
+
 // Shield configuration
-#define USE_SPI                               0x00
-#define USE_UART                              0x01
-#define USE_I2C                               0x02
-#define INT_NONE                              0x00
-#define INT_0                                 0x01
-#define INT_1                                 0x02
-#define INT_BOTH                              0x03
+#define RADIOLIB_USE_SPI                      0x00
+#define RADIOLIB_USE_UART                     0x01
+#define RADIOLIB_USE_I2C                      0x02
+#define RADIOLIB_INT_NONE                     0x00
+#define RADIOLIB_INT_0                        0x01
+#define RADIOLIB_INT_1                        0x02
+#define RADIOLIB_INT_BOTH                     0x03
 
 // Status/error codes
 
@@ -52,9 +79,9 @@
 #define ERR_CHIP_NOT_FOUND                    -2
 
 /*!
-  \brief Deprecated.
+  \brief Failed to allocate memory for temporary buffer. This can be cause by not enough RAM or by passing invalid pointer.
 */
-#define ERR_EEPROM_NOT_INITIALIZED            -3
+#define ERR_MEMORY_ALLOCATION_FAILED          -3
 
 /*!
   \brief Packet supplied to transmission method was longer than 255 bytes.
@@ -177,9 +204,19 @@
 #define ERR_INVALID_MODULATION                -26
 
 /*!
-  \brief Failed to allocate memory for temporary buffer. This can be cause by not enough RAM or by passing invalid pointer.
+  \brief The supplied number of RSSI samples is invalid.
 */
-#define ERR_MEMORY_ALLOCATION_FAILED           -27
+#define ERR_INVALID_NUM_SAMPLES               -27
+
+/*!
+  \brief The supplied RSSI offset is invalid.
+*/
+#define ERR_INVALID_RSSI_OFFSET               -28
+
+/*!
+  \brief The supplied encoding is invalid.
+*/
+#define ERR_INVALID_ENCODING                  -29
 
 /*!
   \}
